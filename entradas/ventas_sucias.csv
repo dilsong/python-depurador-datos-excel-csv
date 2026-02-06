@@ -1,0 +1,10 @@
+Fecha,cod,Producto,Venta_USD,Cantidad,cod_t,Tienda
+2026-01-01,1, Arroz 1kg,10.50,5.0,s_n01,Sucursal Norte
+01/01/2026,1,arroz 1kg,10.50,5.0,s_n01,sucursal norte
+2026.01.02,2,Frijol Negro,8.20,3.0,s_s01,SUCURSAL SUR
+"2026-01-02,2,frijol negro,""8,20"",3.0,s_s01,Sur"
+2026-01-03,3,Leche entera,15.00,,s_n01,Norte
+2026-01-03,3,Leche entera,15.00,10.0,s_n01,Norte
+
+2026-01-04,,,12.00,2.0,s_s01,Sur
+2026-01-03,4,maiz,15.00,10.0,s_n01,Norte
