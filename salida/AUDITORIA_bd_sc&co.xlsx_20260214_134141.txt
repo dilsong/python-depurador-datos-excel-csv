@@ -1,0 +1,19 @@
+=== REPORTE DE AUDITORÍA LOGÍSTICA ===
+Archivo procesado: bd_sc&co.xlsx
+Fecha/Hora: 2026-02-14 13:41:41
+Registros Iniciales: 19
+Registros Finales: 16
+----------------------------------------
+DETALLE DE HALLAZGOS POR COLUMNA:
+• Columna [Fecha]: Encontrados 3 valores nulos.
+• Columna [Producto]: Encontrados 3 valores nulos.
+• Columna [Categoria]: Encontrados 3 valores nulos.
+• Columna [Planta]: Encontrados 3 valores nulos.
+• Columna [Unidades_Producidas]: Encontrados 3 valores nulos.
+• Columna [Costo_Unitario]: Encontrados 3 valores nulos.
+• Columna [Costo_Total]: Encontrados 3 valores nulos.
+• Columna [Inventario_Inicial]: Encontrados 3 valores nulos.
+• Columna [Inventario_Final]: Encontrados 3 valores nulos.
+• Columna [Demanda]: Encontrados 3 valores nulos.
+• Columna [Tiempo_Ciclo_Horas]: Encontrados 3 valores nulos.
+• Columna [Eficiencia_Porcentaje]: Encontrados 3 valores nulos.
