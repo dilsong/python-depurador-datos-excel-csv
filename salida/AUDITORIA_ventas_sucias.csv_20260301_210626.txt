@@ -1,8 +1,8 @@
 === REPORTE DE AUDITORÍA LOGÍSTICA ===
 Archivo procesado: ventas_sucias.csv
-Fecha/Hora: 2026-02-06 12:55:49
-Registros Iniciales: 8
-Registros Finales: 8
+Fecha/Hora: 2026-03-01 21:06:26
+Registros Iniciales: 9
+Registros Finales: 9
 ----------------------------------------
 DETALLE DE HALLAZGOS POR COLUMNA:
 • Columna [cod]: Encontrados 2 valores nulos.
