@@ -66,12 +66,17 @@ Crea un nuevo Excel/CSV con:
 - `openpyxl`  
 - `csv`  
 - Manejo de rutas con `os` y `pathlib`  
-
+- `SQLAlchemy`
+- `mysql-connector-python`
 ---
 
 ## 📂 Estructura del proyecto
-📁 depurador_excel_python/ │── clean.py │── README.md │── ejemplos/ │     ├── archivo_original.xlsx │     ├── archivo_depurado.xlsx │     ├── errores_detectados.txt │     └── grafico_errores.png │── output/ │     ├── archivo_depurado.csv │     └── reporte_errores.txt
-
+📁 limpia_campos/
+│── clean.py
+│── cargar_mysql.py      ← agregar
+│── README.md
+│── entradas/data .xls\.csv a depurar
+│── salida/ .txt de auditoria\ .txt de carga a mysql\ archivo depurado en .xls o csv
 
 ---
 
@@ -89,6 +94,8 @@ Este proyecto evidencia experiencia en:
 - Buenas prácticas de documentación
 - Diseño de herramientas útiles para equipos de datos
 - Pensamiento estructurado y enfoque profesional
+- Flujo ETL completo con aprobación humana
+- Carga segura a MySQL
 
 👨‍💻 Autor
 Dilson Gutierrez
