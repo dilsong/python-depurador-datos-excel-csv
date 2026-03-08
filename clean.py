@@ -6,6 +6,7 @@ import seaborn as sns
 import os
 from datetime import datetime
 
+
 # Configuración visual
 warnings.filterwarnings('ignore', category=FutureWarning)
 sns.set_theme(style="whitegrid")
@@ -91,6 +92,8 @@ def seleccionar_archivo_de_carpeta():
         return None
 def depurador_violento_v17_vscode():
     # --- SELECCIÓN DE ARCHIVO LOCAL EN CARPETA ESPECÍFICA ---
+    df = None          
+    matriz_errores = None 
     ruta_archivo = seleccionar_archivo_de_carpeta()
 
     if ruta_archivo is None:
@@ -109,26 +112,93 @@ def depurador_violento_v17_vscode():
     df = df.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
     df.replace('', np.nan, inplace=True)
 
-    registros_iniciales = len(df)    
-    historial_errores = {col: 0 for col in df.columns}
+    registros_iniciales = len(df)
+    detalles_auditoria = []
+    historial_errores = {col: 0 for col in df.columns}    
 
-    ################
-    detalles_auditoria = [] # Lista para el archivo .txt
+    if "Robot_ms" not in df.columns:
+        df["Robot_ms"] = np.nan
+
+    # Actualizar historial_errores para incluir Robot_ms
+    historial_errores = {col: 0 for col in df.columns}
     
-    # Auditoría inicial de nulos
+    
+    # Auditoría inicial de nulos + registro en Robot_ms
     for col in df.columns:
+        if col == "Robot_ms": continue
         nulos = df[col].isna().sum()
         if nulos > 0:
             detalles_auditoria.append(f"Columna [{col}]: Encontrados {nulos} valores nulos.")
             matriz_errores[df[col].isna()] = 1
             historial_errores[col] += nulos
-    ##################33
+            
+            # Registrar en Robot_ms qué campo estaba vacío
+            mask_nulos = df[col].isna()
+            df.loc[mask_nulos, "Robot_ms"] = df.loc[mask_nulos, "Robot_ms"].fillna('') + f"[{col}:VACIO] "  
+    # fin de auditoría de nulos
 
     matriz_errores[df.isna()] = 1
-    for col in df.columns: historial_errores[col] += df[col].isna().sum()
+    for col in df.columns: 
+        if col == "Robot_ms": continue
+        historial_errores[col] += df[col].isna().sum()
 
     df = df.dropna(how='all')
     matriz_errores = matriz_errores.loc[df.index]
+
+    # hallar duplicados
+    # Detección inteligente de duplicados
+    print("\n--- DETECCIÓN DE DUPLICADOS ---")
+
+    # Preguntar campo clave al inicio
+    col_clave_usuario = None
+    if input("¿Tienes un campo clave único para validar duplicados? (s/n): ").lower() == 's':
+        while True:
+            print(f"Columnas disponibles: {list(df.columns)}")
+            col_clave_usuario = input("Nombre exacto del campo clave: ")
+            if col_clave_usuario in df.columns:
+                break
+            print(f"❌ '{col_clave_usuario}' no existe. Disponibles: {list(df.columns)}")
+
+    # Duplicados exactos
+    dup_exactos = df.duplicated().sum()
+    print(f"\nDuplicados exactos encontrados: {dup_exactos}")
+    if dup_exactos > 0:
+        print("\nMostrando primeros duplicados exactos:")
+        print(df[df.duplicated(keep=False)].head(10).to_string())
+        if input(f"\n¿Eliminar {dup_exactos} duplicados conservando uno? (s/n): ").lower() == 's':
+            df = df.drop_duplicates()
+            df = df.reset_index(drop=True)
+            matriz_errores = matriz_errores.loc[df.index].reset_index(drop=True)
+            detalles_auditoria.append(f"Eliminados {dup_exactos} duplicados exactos.")
+            print(f"✅ {dup_exactos} duplicados eliminados.")
+
+    # Duplicados por campo clave
+    if col_clave_usuario:
+        cols_validar = [col_clave_usuario]
+    else:
+        cols_validar = [col for col in df.columns if 'id' in col.lower() or
+                    'codigo' in col.lower() or 'code' in col.lower()]
+        if cols_validar:
+            print(f"\nColumnas ID detectadas automáticamente: {cols_validar}")
+
+    for col_id in cols_validar:
+        dup_id = df.duplicated(subset=[col_id], keep=False).sum()
+        if dup_id > 0:
+            print(f"\n⚠️ {dup_id} registros con [{col_id}] duplicado:")
+            print(df[df.duplicated(subset=[col_id], keep=False)][[col_id]].value_counts().head(10).to_string())
+            print("\nDetalle de registros duplicados:")
+            print(df[df.duplicated(subset=[col_id], keep=False)].head(10).to_string())
+            if input(f"\n¿Eliminar duplicados por [{col_id}] conservando el primero? (s/n): ").lower() == 's':
+                antes = len(df)
+                df = df.drop_duplicates(subset=[col_id], keep='first')
+                df = df.reset_index(drop=True)
+                matriz_errores = matriz_errores.loc[df.index].reset_index(drop=True)
+                eliminados = antes - len(df)
+                detalles_auditoria.append(f"Eliminados {eliminados} duplicados por [{col_id}].")
+                print(f"✅ {eliminados} duplicados eliminados por [{col_id}].")
+        else:
+            print(f"✅ No hay duplicados por [{col_id}].")
+        # fin de detec``ción de duplicados
 
     for col in df.columns:
         if col == "Robot_ms": continue
@@ -169,40 +239,58 @@ def depurador_violento_v17_vscode():
                 if tipo_n in ['1', '2']: break
                 print("❌ Elige solo 1 o 2.")
             
-            df[col] = df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
-            mask_err = antes_num.astype(str).str.contains(r'[a-zA-Z]', regex=True, na=False)
+            # Reset para alinear índices
+            df = df.reset_index(drop=True)
+            matriz_errores = matriz_errores.reset_index(drop=True)
+            antes_num = antes_num.reset_index(drop=True)
             
-            #############################3
+            df[col] = df[col].astype(str).str.replace(',', '.').str.replace(r'[^\d.]', '', regex=True)
+            mask_err = antes_num.astype(str).str.contains(r'[a-zA-Z$]', regex=True, na=False)
+            
             if mask_err.any():
                 detalles_auditoria.append(f"Columna [{col}]: Limpiados {mask_err.sum()} registros con caracteres no numéricos.")
-                matriz_errores.loc[mask_err, col] = 1
-                historial_errores[col] += mask_err.sum()
-            
-            ##########################
-            #matriz_errores.loc[mask_err, col] = 1
-            #historial_errores[col] += mask_err.sum()
+                for idx in df[mask_err].index:
+                    matriz_errores.at[idx, col] = 1
+                    historial_errores[col] += 1
+
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
             df[col] = df[col].astype(int) if tipo_n == '1' else df[col].astype(float).round(2)
 
         elif sel == '3':
             if "Robot_ms" not in df.columns: df["Robot_ms"] = np.nan
-            #print("Formato: 1. Día/Mes/Año | 2. Mes/Día/Año | 3. Auto")
-            f_date = '1'
+            
+            print("¿Cuál es el formato de fecha?")
+            print("1. DD/MM/YYYY (Latinoamérica/Europa)")
+            print("2. MM/DD/YYYY (Estados Unidos)")
+            print("3. YYYY-MM-DD (ISO/Americano moderno)")
+            print("4. Autodetectar")
+            while True:
+                f_date = input("Opción: ")
+                if f_date in ['1', '2', '3', '4']: break
+                print("❌ Elige solo 1, 2, 3 o 4.")
+            
+            # Reset completo de todos los objetos
+            df = df.reset_index(drop=True)
+            matriz_errores = matriz_errores.reset_index(drop=True)
+            
             foto_original = df[col].copy().astype(str)
-            df_f = pd.to_datetime(df[col], dayfirst=(f_date=='1'), errors='coerce')
+            if f_date == '1':
+                df_f = pd.to_datetime(df[col], dayfirst=True, errors='coerce')
+            elif f_date == '2':
+                df_f = pd.to_datetime(df[col], dayfirst=False, errors='coerce')
+            elif f_date == '3':
+                df_f = pd.to_datetime(df[col], format='%Y-%m-%d', errors='coerce')
+            else:
+                df_f = pd.to_datetime(df[col], infer_datetime_format=True, errors='coerce')
             mask_f = df_f.isna() & df[col].notna()
 
-            ###############################333
             if mask_f.any():
                 detalles_auditoria.append(f"Columna [{col}]: {mask_f.sum()} fechas inválidas movidas a Robot_ms.")
-                df.loc[mask_f, "Robot_ms"] = foto_original[mask_f]
-                matriz_errores.loc[mask_f, col] = 1
-                historial_errores[col] += mask_f.sum()
-            df.loc[mask_f, "Robot_ms"] = foto_original[mask_f]
-            matriz_errores.loc[mask_f, col] = 1
-            historial_errores[col] += mask_f.sum()
+                for idx in df[mask_f].index:
+                    df.at[idx, "Robot_ms"] = foto_original[idx]
+                    matriz_errores.at[idx, col] = 1
+                    historial_errores[col] += 1
 
-            ####################################333
             df[col] = df_f
 
     # Reporte

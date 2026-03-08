@@ -1,3 +1,6 @@
+"""aplicación para cargar los datos limpios a MySQL, con selección de archivo, 
+previsualización y opciones de carga"""
+
 import pandas as pd
 from sqlalchemy import create_engine
 from urllib.parse import quote_plus

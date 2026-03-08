@@ -1,0 +1,15 @@
+=== REPORTE DE AUDITORÍA LOGÍSTICA ===
+Archivo procesado: ventas_sucias.csv
+Fecha/Hora: 2026-03-08 16:42:35
+Registros Iniciales: 520
+Registros Finales: 500
+----------------------------------------
+DETALLE DE HALLAZGOS POR COLUMNA:
+• Columna [Fecha]: Encontrados 27 valores nulos.
+• Columna [Region]: Encontrados 15 valores nulos.
+• Columna [Vendedor]: Encontrados 20 valores nulos.
+• Columna [Cliente_ID]: Encontrados 10 valores nulos.
+• Eliminados 18 duplicados exactos.
+• Eliminados 2 duplicados por [ID_Venta].
+• Columna [Fecha]: 22 fechas inválidas movidas a Robot_ms.
+• Columna [Precio_Unitario]: Limpiados 42 registros con caracteres no numéricos.
